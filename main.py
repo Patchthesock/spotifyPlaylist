@@ -78,6 +78,19 @@ def get_list_of_urls(songs, sp):
             print("Uri not found")
     return list_of_uris
 
+def get_playlist(sp, date):
+    return sp.user_playlist_create(
+        user = sp.current_user()["id"],
+        name = date,
+        public = False
+    )
+
+def add_spotify_playlist_items(sp, songs, playlist):
+    sp.playlist_add_items(
+        playlist_id=playlist["id"],
+        items=get_list_of_urls(songs, sp)
+    )
+
 def main():
     # ASKING FOR THE DATE WANTED
     date = input("Please choose a date in YYY-MM-DD format: ")
@@ -87,17 +100,8 @@ def main():
     soup = get_soup_container(http)
     songs = get_songs(soup)
 
-    # Get Spotify
     creds = get_api_credentials()
     sp = get_spotify(creds["client_id"], creds["secret"])
-    user_id = sp.current_user()["id"]
-
-    # CREATES NEW PLAYLIST WITH THE DATE AS TITLE
-    playlist = sp.user_playlist_create(user=user_id, name=date, public=False)
-    # ADDS LIST OF SONGS TO PLAYLIST
-    sp.playlist_add_items(
-        playlist_id=playlist["id"],
-        items=get_list_of_urls(songs, sp)
-    )
-
+    add_spotify_playlist_items(sp, songs, get_playlist(sp, date))
+    
 main()
